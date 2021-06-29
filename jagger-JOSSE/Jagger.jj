@@ -1,0 +1,82 @@
+// Options for JavaCC.
+options { LOOKAHEAD=1; FORCE_LA_CHECK=true; }
+
+// Fonction principale
+PARSER_BEGIN(Jagger)
+public class Jagger
+{
+    public static void main(String args[]) throws ParseException
+    {
+        Jagger parser = new Jagger(System.in);
+        parser.mainloop();
+    }
+}
+PARSER_END(Jagger)
+
+// Characters to ignore.
+SKIP: { " " | "\r" | "\t" }
+
+// Token specifications.
+TOKEN:
+{
+    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >  // A decimal number.
+|   < DIGIT: ["0"-"9"] >                      // A decimal digit.
+|   < EOL: "\n" >                             // End of line.
+}
+
+// Main lopp: read expressions on a line until end of file.
+//     mainloop → (expression <EOL>)* <EOF>
+void mainloop():
+{ Exp e; }
+{  	
+	(
+	   e=expression() <EOL> {System.out.println(e); new Eval(e);}
+    	)* <EOF>
+}
+
+// Expression (the axiom).
+// E -> T ('+'T | '-'T)*
+Exp expression():
+{ Exp a,b; }
+{
+    a=term()
+    (
+      "+" b=term() { a = new Add(a,b); }
+    | "-" b=term() { a = new Sub(a,b); }
+    )* { return a; }
+}
+
+// Term.
+// T -> U ('*'T | '/'T)*
+Exp term():
+{ Exp a,b; }
+{
+    a=unary()
+    (
+      "*" b=term() { a = new Mul(a,b); }
+    | "/" b=term() { a = new Div(a,b); }
+    )* { return a; }
+}
+
+
+//Unary 
+// 
+Exp unary():
+{Exp a;}
+{
+	(
+	  "-" a=factor() { a = new NegUn(a);}
+	| ("+")? a = factor()
+	) {return a;}
+}
+
+
+// Factor of an expression.
+// F -> <NUMBER> | "(" E ")"
+Exp factor():
+{ Token t; Exp e; }
+{
+      t=<NUMBER> { e = new Num(Double.parseDouble(t.toString()));}
+    | "(" e=expression() ")" 
+    { return e; }
+}
