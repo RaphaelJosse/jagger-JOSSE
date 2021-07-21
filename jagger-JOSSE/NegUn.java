@@ -1,4 +1,4 @@
-  public class NegUn extends Unaire
+  public class NegUn extends Exp // or Unaire ?
 {
     public Exp val_;
 

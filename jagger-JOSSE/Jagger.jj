@@ -19,7 +19,9 @@ SKIP: { " " | "\r" | "\t" }
 // Token specifications.
 TOKEN:
 {
-    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >  // A decimal number.
+	< LRB: "(" >    
+|  	< RRB: ")" >  
+|    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >  // A decimal number.
 |   < DIGIT: ["0"-"9"] >                      // A decimal digit.
 |   < EOL: "\n" >                             // End of line.
 }
@@ -30,8 +32,24 @@ void mainloop():
 { Exp e; }
 {  	
 	(
-	   e=expression() <EOL> {System.out.println(e); new Eval(e);}
+	   e=expression() <EOL> {System.out.println(new Eval(e).res);}
     	)* <EOF>
+}
+
+Exp comparison():
+{ Exp a,b; }
+{
+    
+    a=expression()
+    (
+      "=="  b=expression()  { a = new Equal(a,b); }
+    | "<>"  b=expression()  { a = new NotEqual(a,b); }
+    | ">"   b=expression()  { a = new Sup(a,b); }
+    | "<"   b=expression()  { a = new Inf(a,b); }
+    | ">="  b=expression()  { a = new SuporEqual(a,b); }
+    | "<="  b=expression()  { a = new InforEqual(a,b); }
+    )?
+    { return a; }
 }
 
 // Expression (the axiom).
